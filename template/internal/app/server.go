@@ -2,14 +2,18 @@ package app
 
 import (
 	"context"
+	"net"
+	"time"
+
+	"github.com/razielsd/rzgrpcmock/server/internal/mock"
+
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/razielsd/rzgrpcmock/server/internal/config"
 	"github.com/razielsd/rzgrpcmock/server/internal/generated"
-	log "github.com/sirupsen/logrus"
+	"github.com/razielsd/rzgrpcmock/server/internal/logger"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"
-	"net"
-	"time"
 )
 
 var keepAliveParams = keepalive.ServerParameters{
@@ -22,8 +26,10 @@ var keepAliveParams = keepalive.ServerParameters{
 
 func Run(ctx context.Context, cfg *config.Config) error {
 	// log
-	logger := log.StandardLogger()
-
+	lg, err := logger.GetLogger(cfg)
+	if err != nil {
+		zap.S().Fatalf("Unable init logger: %s", err)
+	}
 	grpc_prometheus.EnableHandlingTimeHistogram()
 	// grpc server
 	s := grpc.NewServer(
@@ -36,37 +42,39 @@ func Run(ctx context.Context, cfg *config.Config) error {
 
 	l, err := net.Listen("tcp", cfg.GRPCAddr)
 	if err != nil {
-		log.Fatalf("failed to listen tcp %s, %v", cfg.GRPCAddr, err)
+		zap.S().Fatalf("failed to listen tcp %s, %v\n", cfg.GRPCAddr, err)
 	}
 
-	generated.RegisterHandler(s, logger)
+	generated.RegisterHandler(s, lg)
 
 	go func() {
-		log.Infof("starting listening grpc server at %s", cfg.GRPCAddr)
+		lg.Info("starting grpc server", zap.String("grpc host", cfg.GRPCAddr))
 		if err := s.Serve(l); err != nil {
-			log.Fatalf("error service grpc server %v", err)
+			zap.S().Fatalf("error service grpc server %v", err)
 		}
 	}()
 
-	gracefulShutDown(s, ctx, cancel)
+	apiServer := mock.NewApiServer(cfg, lg)
+	apiServer.Run(ctx)
+
+	gracefulShutDown(ctx, s, cancel)
 
 	return nil
 }
 
 // Will be generated same code
-//func registerHandler(s *grpc.Server, logger *log.Logger) {
+//  func registerHandler(s *grpc.Server, logger *log.Logger) {
 //	// grpc handlers
 //	myService := myservice.NewService(logger)
 //
 //	// register handlers
 //	papi.RegisterProjectServer(s, myService)
 //
-//}
+// }
 
-func gracefulShutDown(s *grpc.Server, ctx context.Context, cancel context.CancelFunc) {
+func gracefulShutDown(ctx context.Context, s *grpc.Server, cancel context.CancelFunc) {
 	<-ctx.Done()
-	errorMessage := "Received shutdown signal, graceful shutdown done"
-	log.Info(errorMessage)
+	zap.S().Info("Received shutdown signal, graceful shutdown done")
 	s.GracefulStop()
 	cancel()
 }

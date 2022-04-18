@@ -2,14 +2,16 @@ package srcbuilder
 
 import (
 	"bytes"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"fmt"
-	"github.com/razielsd/rzgrpcmock/builder/internal/srcparser"
 	"html/template"
-	"log"
 	"os"
 	"strings"
+
+	"github.com/razielsd/rzgrpcmock/builder/internal/srcparser"
 )
+
+const generatedFilePermission = 0o755
 
 type Builder struct {
 	ModuleName       string
@@ -17,7 +19,6 @@ type Builder struct {
 	PackageName      string
 	SaveDir          string
 	Key              string
-	serviceList      []serviceItem
 }
 
 type serviceItem struct {
@@ -54,10 +55,7 @@ func (b *Builder) buildRegisterHandler(item serviceItem) error {
 
 func (b *Builder) BuildService(field *srcparser.InterfaceField) error {
 	b.Key = makeHash(b.ExportModuleName + "/" + field.Name)
-	src, err := b.buildServiceHandler(field)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	src := b.buildServiceHandler(field)
 	path := fmt.Sprintf("%s/service_%s", b.SaveDir, b.Key)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		err = os.Mkdir(path, os.ModePerm)
@@ -66,7 +64,7 @@ func (b *Builder) BuildService(field *srcparser.InterfaceField) error {
 		}
 	}
 	filename := fmt.Sprintf("%s/service_%s.go", path, b.Key)
-	err = overwriteFile(filename, src)
+	err := overwriteFile(filename, src)
 	if err != nil {
 		return err
 	}
@@ -74,17 +72,16 @@ func (b *Builder) BuildService(field *srcparser.InterfaceField) error {
 		InterfaceName:    field.Name,
 		ExportModuleName: b.ExportModuleName,
 	}
-	b.buildRegisterHandler(service)
-	return nil
+	return b.buildRegisterHandler(service)
 }
 
-func (b *Builder) buildServiceHandler(field *srcparser.InterfaceField) (string, error) {
+func (b *Builder) buildServiceHandler(field *srcparser.InterfaceField) string {
 	handlerSrc, _ := b.buildServiceHeader(field)
 	for _, v := range field.MethodList {
 		src, _ := b.buildHandler(v)
-		handlerSrc = handlerSrc + src
+		handlerSrc += src
 	}
-	return handlerSrc, nil
+	return handlerSrc
 }
 
 func (b *Builder) buildServiceHeader(field *srcparser.InterfaceField) (string, error) {
@@ -98,6 +95,7 @@ func (b *Builder) buildServiceHeader(field *srcparser.InterfaceField) (string, e
 		"ModuleName":    b.ExportModuleName,
 		"Index":         b.Key,
 		"InterfaceName": field.Name,
+		"ServiceName":   strings.TrimSuffix(field.Name, "Server"),
 	}
 	src := bytes.NewBufferString("")
 	err = tmpl.Execute(src, params)
@@ -133,11 +131,14 @@ func (b *Builder) buildHandler(method *srcparser.InterfaceMethod) (string, error
 }
 
 func overwriteFile(filename, data string) error {
-	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, generatedFilePermission)
 	if err != nil {
 		return err
 	}
-	f.Write([]byte(data))
+	_, err = f.Write([]byte(data))
+	if err != nil {
+		return err
+	}
 	if err := f.Close(); err != nil {
 		return err
 	}
@@ -146,5 +147,5 @@ func overwriteFile(filename, data string) error {
 
 func makeHash(s string) string {
 	data := []byte(s)
-	return fmt.Sprintf("%x", md5.Sum(data))
+	return fmt.Sprintf("%x", md5.Sum(data)) //nolint:gosec
 }

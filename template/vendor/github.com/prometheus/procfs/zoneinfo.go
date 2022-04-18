@@ -11,7 +11,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//go:build !windows
 // +build !windows
 
 package procfs
@@ -85,7 +84,6 @@ func (fs FS) Zoneinfo() ([]Zoneinfo, error) {
 }
 
 func parseZoneinfo(zoneinfoData []byte) ([]Zoneinfo, error) {
-
 	zoneinfo := []Zoneinfo{}
 
 	zoneinfoBlocks := bytes.Split(zoneinfoData, []byte("\nNode"))

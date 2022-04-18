@@ -2,17 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/razielsd/rzgrpcmock/builder/internal/srcbuilder"
-	"github.com/razielsd/rzgrpcmock/builder/internal/srcparser"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/razielsd/rzgrpcmock/builder/internal/srcbuilder"
+	"github.com/razielsd/rzgrpcmock/builder/internal/srcparser"
 )
 
 const moduleName = "github.com/razielsd/rzgrpcmock/server"
 
 func main() {
-	if len(os.Args) < 4 {
+	const argCount = 4
+	if len(os.Args) < argCount {
 		log.Fatalln("Require 3 argument: grpc-file save-dir module-name")
 	}
 	saveDir := os.Args[2]
@@ -29,7 +31,6 @@ func main() {
 		SaveDir:          saveDir,
 	}
 	for _, field := range extractor.InterfaceList {
-
 		if !strings.HasSuffix(field.Name, "Server") {
 			continue
 		}

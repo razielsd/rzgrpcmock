@@ -15,4 +15,7 @@ proto:
         --go-grpc_out=$(PROTO_OUT_DIR)  --go-grpc_opt=paths=source_relative \
 		./${PROTO_API_DIR}/*.proto
 
-.PHONY: build
+.PHONY: lint
+lint:
+	cd template && golangci-lint run ./...
+	cd builder && golangci-lint run ./...

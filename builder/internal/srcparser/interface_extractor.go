@@ -1,6 +1,7 @@
 package srcparser
 
 import (
+	"errors"
 	"fmt"
 	"go/ast"
 	"go/parser"
@@ -60,18 +61,18 @@ func (v VarField) String() string {
 		s = "*"
 	}
 	if v.Package != "" {
-		s = s + v.Package + "."
+		s += v.Package + "."
 	}
-	s = s + v.Name
+	s += v.Name
 	return s
 }
 
 func (v VarField) FullName() string {
 	s := ""
 	if v.Package != "" {
-		s = s + v.Package + "."
+		s += v.Package + "."
 	}
-	s = s + v.Name
+	s += v.Name
 	return s
 }
 
@@ -86,9 +87,7 @@ func (i *InterfaceExtractor) Parse(filename string) error {
 		return err
 	}
 
-	if err := i.extractPackage(node); err != nil {
-		return fmt.Errorf("unable parse package name: %w", err)
-	}
+	i.extractPackage(node)
 
 	for _, f := range node.Decls {
 		var field *InterfaceField
@@ -119,24 +118,22 @@ func (i *InterfaceExtractor) Parse(filename string) error {
 	return nil
 }
 
-func (i *InterfaceExtractor) extractPackage(node ast.Node) error {
-	switch x := node.(type) {
-	case *ast.File:
+func (i *InterfaceExtractor) extractPackage(node ast.Node) {
+	x, ok := node.(*ast.File)
+	if ok {
 		i.PackageName = x.Name.Name
-		fmt.Println(i.PackageName)
 	}
-	return nil
 }
 
 func (i *InterfaceExtractor) extractInterface(field *InterfaceField) error {
 	for _, spec := range field.Target.Specs {
 		ts, ok := spec.(*ast.TypeSpec)
 		if !ok {
-			fmt.Println("Error 1")
+			return errors.New("unable get type spec")
 		}
 		tp, ok := ts.Type.(*ast.InterfaceType)
 		if !ok {
-			fmt.Println("Error 1")
+			return errors.New("unable get interface type")
 		}
 
 		methodList, err := i.parseInterfaceMethods(tp)
@@ -184,7 +181,7 @@ func (i *InterfaceExtractor) extractParams(fn []*ast.Field) ([]*VarField, error)
 		switch sel := param.Type.(type) {
 		case *ast.SelectorExpr:
 			pkg := ""
-			if ident, ok := sel.X.(*ast.Ident); ok == true {
+			if ident, ok := sel.X.(*ast.Ident); ok {
 				pkg = ident.Name
 			}
 			arg = NewVarField(pkg, sel.Sel.Name, false)

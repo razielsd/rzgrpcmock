@@ -1,15 +1,18 @@
 package generated
 
 import (
-	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"sync"
+
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
-var handlerRegistration []func(s *grpc.Server, logger *log.Logger)
-var mu = &sync.Mutex{}
+var (
+	handlerRegistration []func(s *grpc.Server, logger *zap.Logger)
+	mu                  = &sync.Mutex{} //nolint:deadcode,unused,varcheck
+)
 
-func RegisterHandler(s *grpc.Server, logger *log.Logger) {
+func RegisterHandler(s *grpc.Server, logger *zap.Logger) {
 	for _, f := range handlerRegistration {
 		f(s, logger)
 	}
