@@ -659,7 +659,6 @@ type SysvIpcPerm struct {
 	_    uint64
 	_    uint64
 }
-
 type SysvShmDesc struct {
 	Perm       SysvIpcPerm
 	Atime_high uint32

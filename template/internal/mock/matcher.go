@@ -2,13 +2,13 @@ package mock
 
 import (
 	"encoding/json"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"reflect"
 	"strings"
 	"sync"
 
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type MatchRule struct {
@@ -59,12 +59,19 @@ func (m *Matcher) Match(serviceName, methodName string, req, resp interface{}) e
 	)
 	serviceName = strings.ToLower(strings.TrimSpace(serviceName))
 	methodName = strings.ToLower(strings.TrimSpace(methodName))
+	var eqRule *MatchRule
+	eqWeight := 0
 	for _, rule := range m.ruleList {
-		if m.isEqual(rule, serviceName, methodName, req) {
-			err := json.Unmarshal([]byte(rule.Response), resp)
-			if err != nil {
-				return status.Error(codes.Internal, "failed unmarshal response")
-			}
+		weight, isEqual := m.isEqual(rule, serviceName, methodName, req)
+		if  isEqual && weight > eqWeight{
+			eqWeight = weight
+			eqRule = rule
+		}
+	}
+	if eqRule != nil {
+		err := json.Unmarshal([]byte(eqRule.Response), &resp)
+		if err != nil {
+			return status.Error(codes.Internal, "failed unmarshal response")
 		}
 	}
 	return nil
@@ -81,35 +88,36 @@ func (m *Matcher) Append(rule *MatchRule) {
 	m.ruleList = append(m.ruleList, rule)
 }
 
-func (m *Matcher) isEqual(rule *MatchRule, serviceName, methodName string, req interface{}) bool {
+func (m *Matcher) isEqual(rule *MatchRule, serviceName, methodName string, req interface{}) (int, bool) {
 	if rule.ServiceName != serviceName || rule.MethodName != methodName {
-		return false
+		return 0, false
 	}
 	js, err := json.Marshal(req)
 	if err != nil {
-		return false
+		return 0, false
 	}
 	expected := make(map[string]interface{})
 	in := make(map[string]interface{})
 
 	err = json.Unmarshal([]byte(rule.Request), &expected)
 	if err != nil {
-		return false
+		return 0, false
 	}
 
 	err = json.Unmarshal(js, &in)
 	if err != nil {
-		return false
+		return 0, false
 	}
-
+	weight := 0
 	for k, v := range expected {
 		actual, ok := in[k]
 		if !ok {
-			return false
+			return 0, false
 		}
 		if !reflect.DeepEqual(v, actual) {
-			return false
+			return 0, false
 		}
+		weight++
 	}
-	return true
+	return weight, true
 }
