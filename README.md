@@ -18,8 +18,8 @@ API для настройки запускается на порту 9010(env: A
  * `GET /api/form` - форма для отправки мока, для дебага
  * `POST /api/mock/add` - добавить мок, структура запроса
 ```
-request     string
-response    string
+request     string (json)
+response    string (json)
 service_name string
 method_name  string
 ```
