@@ -43,6 +43,10 @@ add-module()
   done
 }
 
+run-server() {
+  cd ${MOCK_ROOT} && go run .
+}
+
 MODE=$1
 
 case $MODE in
@@ -54,6 +58,9 @@ case $MODE in
   ;;
   add)
     add-module $2
+  ;;
+  run)
+    run-server
   ;;
 esac
 cd $ROOT
