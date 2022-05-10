@@ -1,16 +1,18 @@
-package mock
+package mockserver
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
 	"net/http"
 	"time"
 
 	"github.com/razielsd/rzgrpcmock/server/internal/config"
 
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +31,7 @@ func NewApiServer(cfg *config.Config, log *zap.Logger) *Server {
 }
 
 func (s *Server) Run(ctx context.Context) {
-	NewMatcher(DefaultMatcher, s.log)
+	reqmatcher.NewMatcher(reqmatcher.DefaultMatcher, s.log)
 	r := mux.NewRouter()
 	s.addRoute(r)
 	srv := s.createServer(r)
@@ -41,8 +43,10 @@ func (s *Server) Run(ctx context.Context) {
 
 func (s *Server) addRoute(r *mux.Router) {
 	r.HandleFunc("/api/mock/add", s.handlerMockAdd).Methods("POST")
-	r.HandleFunc("/api/test", s.handlerTest).Methods("GET")
 	r.HandleFunc("/api/form", s.handlerForm).Methods("GET")
+	r.HandleFunc("/health/liveness", s.handlerHealthProbe).Methods("GET")
+	r.HandleFunc("/health/readiness", s.handlerHealthProbe).Methods("GET")
+	r.Path("/metrics").Handler(promhttp.Handler())
 }
 
 func (s *Server) createServer(r *mux.Router) *http.Server {

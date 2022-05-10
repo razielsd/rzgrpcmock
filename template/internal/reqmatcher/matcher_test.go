@@ -1,6 +1,7 @@
-package mock
+package reqmatcher
 
 import (
+	"github.com/razielsd/rzgrpcmock/server/internal/logger"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -9,7 +10,7 @@ func TestGetMatcher(t *testing.T) {
 }
 
 func TestMatcher_Append(t *testing.T) {
-	matcher := NewMatcher(DefaultMatcher, testLogger(t))
+	matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
 	rule := &MatchRule{
 		ServiceName: "s1",
 		MethodName:  "m1",
@@ -26,7 +27,7 @@ func TestMatcher_Append(t *testing.T) {
 
 func TestMatcher_Match(t *testing.T) {
 	t.Run("success match rule with 2 matched rule", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, testLogger(t))
+		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
 		serviceName := "s2"
 		methodName := "m2"
 		rule := &MatchRule{
@@ -68,7 +69,7 @@ func TestMatcher_Match(t *testing.T) {
 
 func TestMatcher_isEqual(t *testing.T) {
 	t.Run("service name is invalid", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, testLogger(t))
+		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
 		serviceName := "s2"
 		methodName := "m2"
 		rule := &MatchRule{
@@ -80,7 +81,7 @@ func TestMatcher_isEqual(t *testing.T) {
 	})
 
 	t.Run("method name is invalid", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, testLogger(t))
+		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
 		serviceName := "s1"
 		methodName := "m2"
 		rule := &MatchRule{
@@ -92,7 +93,7 @@ func TestMatcher_isEqual(t *testing.T) {
 	})
 
 	t.Run("success weight count", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, testLogger(t))
+		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
 		serviceName := "s1"
 		methodName := "m1"
 		rule := &MatchRule{
@@ -115,6 +116,6 @@ func TestMatcher_isEqual(t *testing.T) {
 }
 
 func TestNewMatcher(t *testing.T) {
-	logger := NewMatcher("test", testLogger(t))
+	logger := NewMatcher("test", logger.TestLogger(t))
 	require.NotNil(t, logger)
 }

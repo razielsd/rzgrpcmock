@@ -6,7 +6,7 @@ import (
 	"context"
 	{{.PackageName}} "{{.ModuleName}}"
 	"go.uber.org/zap"
-	"github.com/razielsd/rzgrpcmock/server/internal/mock"
+	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
 )
 
 type Service struct {
@@ -25,7 +25,7 @@ func NewService(lg *zap.Logger) *Service {
 
 const handlerTemplate = `
 func (s *Service) {{.Method}}({{.Args}}) (*{{.Response}}, error) {
-	matcher := mock.GetMatcher(mock.DefaultMatcher)
+	matcher := reqmatcher.GetMatcher(reqmatcher.DefaultMatcher)
 	resp := &{{.Response}}{}
 	err := matcher.Match(s.serviceName, "{{.Method}}", arg1, resp)
 	return resp, err

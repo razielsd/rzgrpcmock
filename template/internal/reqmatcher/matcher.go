@@ -1,4 +1,4 @@
-package mock
+package reqmatcher
 
 import (
 	"encoding/json"

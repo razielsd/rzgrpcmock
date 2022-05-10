@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/mock"
+	"github.com/razielsd/rzgrpcmock/server/internal/mockserver"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/razielsd/rzgrpcmock/server/internal/config"
@@ -54,7 +54,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 		}
 	}()
 
-	apiServer := mock.NewApiServer(cfg, lg)
+	apiServer := mockserver.NewApiServer(cfg, lg)
 	apiServer.Run(ctx)
 
 	gracefulShutDown(ctx, s, cancel)
