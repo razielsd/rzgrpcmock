@@ -17,9 +17,12 @@
 API для настройки запускается на порту 9010(env: API_ADDR), доступные апи:
  * `GET /api/form` - форма для отправки мока, для дебага
  * `POST /api/mock/add` - добавить мок, структура запроса
-```
-request     string (json)
-response    string (json)
-service_name string
-method_name  string
-```
+
+
+   Подробнее в [swagger](https://editor.swagger.io/?url=https://raw.githubusercontent.com/razielsd/rzgrpcmock/master/doc/swagger.json)
+
+###  Monitoring
+API содержит несколько методов для мониторинга приложения:
+* _/mertics_ - метрики приложения для prometheus
+* _/health/liveness_ - k8s liveness probe
+* _/health/readiness_ - k8s readiness probe

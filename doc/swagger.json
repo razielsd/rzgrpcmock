@@ -1,0 +1,187 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Antibruteforce scheme.",
+    "version": "1.0.0",
+    "title": "Swagger Antibruteforce"
+  },
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/api/mock/add": {
+      "post": {
+        "summary": "Add mock response",
+        "description": "",
+        "consumes": [
+          "application/x-www-form-urlencoded"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "formData",
+            "type": "string",
+            "name": "request",
+            "description": "request as json",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "type": "string",
+            "name": "response",
+            "description": "response as json",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "type": "string",
+            "name": "service_name",
+            "description": "service name",
+            "required": true
+          },
+          {
+            "in": "formData",
+            "type": "string",
+            "name": "method_name",
+            "description": "method name",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success add mock",
+            "schema": {
+              "$ref": "#/definitions/AllowResponse"
+            }
+          },
+          "400": {
+            "description": "Bad parameters",
+            "schema": {
+              "$ref": "#/definitions/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/form": {
+      "get": {
+        "summary": "test mock form",
+        "responses": {
+          "200": {
+            "description": "form for add mock",
+            "schema": {
+              "$ref": "#/definitions/OKResponse"
+            }
+          }
+        }
+      }
+    },
+    "/health/liveness": {
+      "get": {
+        "summary": "k8s liveness probe",
+        "responses": {
+          "200": {
+            "description": "Service is alive",
+            "schema": {
+              "$ref": "#/definitions/OKResponse"
+            }
+          }
+        }
+      }
+    },
+    "/health/readiness": {
+      "get": {
+        "summary": "k8s readiness probe",
+        "responses": {
+          "200": {
+            "description": "Service can accept requests",
+            "schema": {
+              "$ref": "#/definitions/OKResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "AllowResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object",
+          "properties": {
+            "can-auth": {
+              "type": "boolean"
+            },
+            "login-check": {
+              "type": "boolean"
+            },
+            "pwd-check": {
+              "type": "boolean"
+            },
+            "ip-check": {
+              "type": "boolean"
+            },
+            "whitelist-check": {
+              "type": "boolean"
+            },
+            "blacklist-check": {
+              "type": "boolean"
+            }
+          }
+        },
+        "code": {
+          "type": "integer"
+        }
+      }
+    },
+    "IPListResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "192.168.1.55",
+            "10.10.1.0/24"
+          ]
+        },
+        "code": {
+          "type": "integer"
+        }
+      }
+    },
+    "OKResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            }
+          }
+        },
+        "code": {
+          "type": "integer"
+        }
+      }
+    }
+  }
+}
