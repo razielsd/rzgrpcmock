@@ -4,7 +4,7 @@
 Для настройки мок-сервера используйте `build.sh`, параметры:
  * `./build.sh init` - инициализации мок-сервера
  * `./build.sh clean` - привести мок-сервер к начальному состоянию
- * `./build.sh <go module>` - как в `go get ...`
+ * `./build.sh add <go module>` - как в `go get ...`
  * `./build.sh run` - запуск сервера
 
 ## Configure
