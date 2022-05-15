@@ -5,6 +5,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/razielsd/rzgrpcmock/server/internal/interceptor"
+
 	"github.com/razielsd/rzgrpcmock/server/internal/mockserver"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -26,7 +28,7 @@ var keepAliveParams = keepalive.ServerParameters{
 
 func Run(ctx context.Context, cfg *config.Config) error {
 	// log
-	lg, err := logger.GetLogger(cfg)
+	lg, err := logger.CreateLogger(cfg)
 	if err != nil {
 		zap.S().Fatalf("Unable init logger: %s", err)
 	}
@@ -36,6 +38,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 		grpc.KeepaliveParams(keepAliveParams),
 		grpc.ChainUnaryInterceptor(
 			grpc_prometheus.UnaryServerInterceptor,
+			interceptor.UnaryMethodServerInterceptor,
 		),
 	)
 	_, cancel := context.WithCancel(ctx)

@@ -37,15 +37,8 @@
           {
             "in": "formData",
             "type": "string",
-            "name": "service_name",
-            "description": "service name",
-            "required": true
-          },
-          {
-            "in": "formData",
-            "type": "string",
             "name": "method_name",
-            "description": "method name",
+            "description": "method name, example: yourspace.cp.somename.manager.v1.AgreementService/GetAgreement",
             "required": true
           }
         ],

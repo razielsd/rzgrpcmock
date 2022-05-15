@@ -32,10 +32,6 @@ func (s *Server) handlerForm(w http.ResponseWriter, r *http.Request) {
 <form method="post" action="http://{{.Host}}/api/mock/add">
 	<input type="hidden" name="ref" value="form">
     <div class="form-row">
-    <label for="service_name">Service</label><br>
-    <input name="service_name"  id="service_name" type="text" value="">
-    </div>
-    <div class="form-row">
     <label for="method">Method</label><br>
     <input name="method"  id="method" type="text" value="">
     </div>

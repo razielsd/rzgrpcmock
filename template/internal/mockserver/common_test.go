@@ -2,11 +2,12 @@ package mockserver
 
 import (
 	"context"
-	"github.com/razielsd/rzgrpcmock/server/internal/config"
-	"github.com/razielsd/rzgrpcmock/server/internal/logger"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/razielsd/rzgrpcmock/server/internal/config"
+	"github.com/razielsd/rzgrpcmock/server/internal/logger"
 )
 
 func createServer(t *testing.T) *Server {

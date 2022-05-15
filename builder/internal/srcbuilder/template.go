@@ -12,13 +12,11 @@ import (
 type Service struct {
 	{{.PackageName}}.Unimplemented{{ .InterfaceName }}
 	log    *zap.Logger
-    serviceName string
 }
 
 func NewService(lg *zap.Logger) *Service {
 	return &Service{
 		log: lg,
-		serviceName: {{.PackageName}}.{{ .ServiceName }}_ServiceDesc.ServiceName,
 	}
 }
 `
@@ -27,7 +25,7 @@ const handlerTemplate = `
 func (s *Service) {{.Method}}({{.Args}}) (*{{.Response}}, error) {
 	matcher := reqmatcher.GetMatcher(reqmatcher.DefaultMatcher)
 	resp := &{{.Response}}{}
-	err := matcher.Match(s.serviceName, "{{.Method}}", arg1, resp)
+	err := matcher.Match(arg0 , arg1, resp)
 	return resp, err
 }
 `

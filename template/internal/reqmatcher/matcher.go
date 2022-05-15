@@ -1,22 +1,22 @@
 package reqmatcher
 
 import (
+	"context"
 	"encoding/json"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"reflect"
 	"strings"
 	"sync"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"go.uber.org/zap"
 )
 
 type MatchRule struct {
-	Request     string `json:"request"`
-	Response    string `json:"response"`
-	ServiceName string `json:"service_name"`
-	MethodName  string `json:"method_name"`
-	Id          string
+	Request    string `json:"request"`
+	Response   string `json:"response"`
+	MethodName string `json:"method_name"`
 }
 
 const DefaultMatcher = "default"
@@ -47,23 +47,21 @@ func NewMatcher(name string, log *zap.Logger) *Matcher {
 }
 
 func GetMatcher(name string) *Matcher {
-	m, _ := matcherList[name]
+	m := matcherList[name]
 	return m
 }
 
-func (m *Matcher) Match(serviceName, methodName string, req, resp interface{}) error {
+func (m *Matcher) Match(ctx context.Context, req, resp interface{}) error {
+	methodName := ctx.Value("method").(string)
 	m.log.Info(
 		"Match",
-		zap.String("serviceName", serviceName),
-		zap.String("methodName", methodName),
+		zap.String("method", methodName),
 	)
-	serviceName = strings.ToLower(strings.TrimSpace(serviceName))
-	methodName = strings.ToLower(strings.TrimSpace(methodName))
 	var eqRule *MatchRule
 	eqWeight := 0
 	for _, rule := range m.ruleList {
-		weight, isEqual := m.isEqual(rule, serviceName, methodName, req)
-		if  isEqual && weight > eqWeight{
+		weight, isEqual := m.isEqual(rule, methodName, req)
+		if isEqual && weight > eqWeight {
 			eqWeight = weight
 			eqRule = rule
 		}
@@ -79,17 +77,16 @@ func (m *Matcher) Match(serviceName, methodName string, req, resp interface{}) e
 
 func (m *Matcher) Append(rule *MatchRule) {
 	m.log.Info(
-		"add rule", zap.String("serviceName", rule.ServiceName), zap.String("method", rule.MethodName),
+		"add rule", zap.String("method", rule.MethodName),
 	)
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	rule.ServiceName = strings.ToLower(strings.TrimSpace(rule.ServiceName))
 	rule.MethodName = strings.ToLower(strings.TrimSpace(rule.MethodName))
 	m.ruleList = append(m.ruleList, rule)
 }
 
-func (m *Matcher) isEqual(rule *MatchRule, serviceName, methodName string, req interface{}) (int, bool) {
-	if rule.ServiceName != serviceName || rule.MethodName != methodName {
+func (m *Matcher) isEqual(rule *MatchRule, methodName string, req interface{}) (int, bool) {
+	if rule.MethodName != methodName {
 		return 0, false
 	}
 	js, err := json.Marshal(req)

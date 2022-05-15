@@ -1,9 +1,11 @@
 package reqmatcher
 
 import (
+	"context"
+	"testing"
+
 	"github.com/razielsd/rzgrpcmock/server/internal/logger"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestGetMatcher(t *testing.T) {
@@ -12,8 +14,7 @@ func TestGetMatcher(t *testing.T) {
 func TestMatcher_Append(t *testing.T) {
 	matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
 	rule := &MatchRule{
-		ServiceName: "s1",
-		MethodName:  "m1",
+		MethodName: "m1",
 		Request: `{
 			  "id": "id-1",
 			  "name": "username"
@@ -28,11 +29,9 @@ func TestMatcher_Append(t *testing.T) {
 func TestMatcher_Match(t *testing.T) {
 	t.Run("success match rule with 2 matched rule", func(t *testing.T) {
 		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
-		serviceName := "s2"
 		methodName := "m2"
 		rule := &MatchRule{
-			ServiceName: serviceName,
-			MethodName:  methodName,
+			MethodName: methodName,
 			Request: `{
 			  "id": "id-1",
 			  "name": "username"
@@ -40,8 +39,7 @@ func TestMatcher_Match(t *testing.T) {
 			Response: `{"id": "id-1"}`,
 		}
 		rule2 := &MatchRule{
-			ServiceName: serviceName,
-			MethodName:  methodName,
+			MethodName: methodName,
 			Request: `{
 			  "id": "id-1",
 			  "name": "username",
@@ -52,12 +50,13 @@ func TestMatcher_Match(t *testing.T) {
 		matcher.Append(rule)
 		matcher.Append(rule2)
 		req := map[string]string{
-			"id": "id-1",
-			"name": "username",
+			"id":       "id-1",
+			"name":     "username",
 			"some_key": "123",
 		}
 		resp := make(map[string]string)
-		err := matcher.Match(serviceName, methodName, &req, &resp)
+		ctx := context.WithValue(context.Background(), "method", methodName)
+		err := matcher.Match(ctx, &req, &resp)
 		require.NoError(t, err)
 
 		expected := map[string]string{
@@ -68,48 +67,32 @@ func TestMatcher_Match(t *testing.T) {
 }
 
 func TestMatcher_isEqual(t *testing.T) {
-	t.Run("service name is invalid", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
-		serviceName := "s2"
-		methodName := "m2"
-		rule := &MatchRule{
-			ServiceName: "s1",
-			MethodName:  "m2",
-		}
-		_, f := matcher.isEqual(rule, serviceName, methodName, nil)
-		require.False(t, f)
-	})
-
 	t.Run("method name is invalid", func(t *testing.T) {
 		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
-		serviceName := "s1"
 		methodName := "m2"
 		rule := &MatchRule{
-			ServiceName: "s1",
-			MethodName:  "m1",
+			MethodName: "m1",
 		}
-		_, f := matcher.isEqual(rule, serviceName, methodName, nil)
+		_, f := matcher.isEqual(rule, methodName, nil)
 		require.False(t, f)
 	})
 
 	t.Run("success weight count", func(t *testing.T) {
 		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
-		serviceName := "s1"
 		methodName := "m1"
 		rule := &MatchRule{
-			ServiceName: "s1",
-			MethodName:  "m1",
+			MethodName: "m1",
 			Request: `{
 			  "id": "id-1",
 			  "name": "username"
 			}`,
 		}
 		req := map[string]string{
-			"id": "id-1",
-			"name": "username",
+			"id":       "id-1",
+			"name":     "username",
 			"some_key": "123",
 		}
-		weight, f := matcher.isEqual(rule, serviceName, methodName, req)
+		weight, f := matcher.isEqual(rule, methodName, req)
 		require.True(t, f)
 		require.Equal(t, 2, weight)
 	})

@@ -1,15 +1,16 @@
 package logger
 
 import (
+	"testing"
+
 	"github.com/razielsd/rzgrpcmock/server/internal/config"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"testing"
 )
 
-// GetLogger Get initialized logger.
-func GetLogger(appCfg *config.Config) (*zap.Logger, error) {
+// CreateLogger Get initialized logger.
+func CreateLogger(appCfg *config.Config) (*zap.Logger, error) {
 	var logLevel zap.AtomicLevel
 	err := logLevel.UnmarshalText([]byte(appCfg.LogLevel))
 	if err != nil {
@@ -42,4 +43,3 @@ func TestLogger(t *testing.T) *zap.Logger {
 	require.NoError(t, err, "failed init test logger")
 	return log
 }
-
