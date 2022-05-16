@@ -3,6 +3,7 @@ package reqmatcher
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"strings"
 	"sync"
@@ -13,13 +14,22 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	DefaultMatcher             = "default"
+	MetaKey        MetaKeyName = "meta"
+)
+
+type MetaKeyName string
+
+type RequestMeta struct {
+	Method string
+}
+
 type MatchRule struct {
 	Request    string `json:"request"`
 	Response   string `json:"response"`
 	MethodName string `json:"method_name"`
 }
-
-const DefaultMatcher = "default"
 
 type Matcher struct {
 	ruleList []*MatchRule
@@ -52,15 +62,22 @@ func GetMatcher(name string) *Matcher {
 }
 
 func (m *Matcher) Match(ctx context.Context, req, resp interface{}) error {
-	methodName := ctx.Value("method").(string)
+	meta, ok := ctx.Value(MetaKey).(RequestMeta)
+	if !ok {
+		m.log.Error(
+			"failed extract request meta",
+			zap.String("method", meta.Method),
+		)
+		return errors.New("failed extract request meta")
+	}
 	m.log.Info(
-		"Match",
-		zap.String("method", methodName),
+		"Match request",
+		zap.String("method", meta.Method),
 	)
 	var eqRule *MatchRule
 	eqWeight := 0
 	for _, rule := range m.ruleList {
-		weight, isEqual := m.isEqual(rule, methodName, req)
+		weight, isEqual := m.isEqual(rule, meta, req)
 		if isEqual && weight > eqWeight {
 			eqWeight = weight
 			eqRule = rule
@@ -85,8 +102,8 @@ func (m *Matcher) Append(rule *MatchRule) {
 	m.ruleList = append(m.ruleList, rule)
 }
 
-func (m *Matcher) isEqual(rule *MatchRule, methodName string, req interface{}) (int, bool) {
-	if rule.MethodName != methodName {
+func (m *Matcher) isEqual(rule *MatchRule, meta RequestMeta, req interface{}) (int, bool) {
+	if rule.MethodName != meta.Method {
 		return 0, false
 	}
 	js, err := json.Marshal(req)

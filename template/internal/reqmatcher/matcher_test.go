@@ -55,7 +55,8 @@ func TestMatcher_Match(t *testing.T) {
 			"some_key": "123",
 		}
 		resp := make(map[string]string)
-		ctx := context.WithValue(context.Background(), "method", methodName)
+		meta := RequestMeta{Method: methodName}
+		ctx := context.WithValue(context.Background(), MetaKey, meta)
 		err := matcher.Match(ctx, &req, &resp)
 		require.NoError(t, err)
 
@@ -73,7 +74,10 @@ func TestMatcher_isEqual(t *testing.T) {
 		rule := &MatchRule{
 			MethodName: "m1",
 		}
-		_, f := matcher.isEqual(rule, methodName, nil)
+		meta := RequestMeta{
+			Method: methodName,
+		}
+		_, f := matcher.isEqual(rule, meta, nil)
 		require.False(t, f)
 	})
 
@@ -92,7 +96,10 @@ func TestMatcher_isEqual(t *testing.T) {
 			"name":     "username",
 			"some_key": "123",
 		}
-		weight, f := matcher.isEqual(rule, methodName, req)
+		meta := RequestMeta{
+			Method: methodName,
+		}
+		weight, f := matcher.isEqual(rule, meta, req)
 		require.True(t, f)
 		require.Equal(t, 2, weight)
 	})

@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
 	"strings"
 
 	"google.golang.org/grpc"
@@ -14,7 +15,10 @@ func UnaryMethodServerInterceptor(
 	handler grpc.UnaryHandler,
 ) (interface{}, error) {
 	method := strings.ToLower(strings.TrimLeft(info.FullMethod, `/`))
-	ctx = context.WithValue(ctx, "method", method) //nolint: revive, staticcheck
+	meta := reqmatcher.RequestMeta{
+		Method: method,
+	}
+	ctx = context.WithValue(ctx, reqmatcher.MetaKey, meta)
 	reply, err := handler(ctx, req)
 	return reply, err
 }
