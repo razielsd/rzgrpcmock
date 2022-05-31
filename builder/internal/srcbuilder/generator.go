@@ -90,12 +90,17 @@ func (b *Builder) buildServiceHeader(field *srcparser.InterfaceField) (string, e
 	if err != nil {
 		return "", err
 	}
-	params := map[string]string{
+	extImport := ""
+	for k, importSpec := range field.ImportList {
+		extImport += fmt.Sprintf("%s %s\n", k, importSpec.Path.Value)
+	}
+	params := map[string]interface{}{
 		"PackageName":   b.PackageName,
 		"ModuleName":    b.ExportModuleName,
 		"Index":         b.Key,
 		"InterfaceName": field.Name,
 		"ServiceName":   strings.TrimSuffix(field.Name, "Server"),
+		"ExtImport":     template.HTML(extImport), //nolint: gosec
 	}
 	src := bytes.NewBufferString("")
 	err = tmpl.Execute(src, params)

@@ -41,6 +41,8 @@ add-module()
   do
     cd $BUILDER_ROOT && go run . $i ${MOCK_ROOT}/internal/generated ${PKG_NAME}
   done
+
+  cd ${MOCK_ROOT} && go mod vendor
 }
 
 run-server() {

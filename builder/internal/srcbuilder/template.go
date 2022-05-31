@@ -7,6 +7,7 @@ import (
 	{{.PackageName}} "{{.ModuleName}}"
 	"go.uber.org/zap"
 	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
+	{{.ExtImport}}
 )
 
 type Service struct {

@@ -13,6 +13,7 @@ import (
 type InterfaceExtractor struct {
 	PackageName   string
 	Name          string
+	importSpec    map[string]*ast.ImportSpec
 	InterfaceList []*InterfaceField
 }
 
@@ -20,6 +21,7 @@ type InterfaceField struct {
 	Name       string
 	Target     *ast.GenDecl
 	MethodList []*InterfaceMethod
+	ImportList map[string]*ast.ImportSpec
 }
 
 type InterfaceMethod struct {
@@ -32,6 +34,14 @@ type VarField struct {
 	Name      string
 	Package   string
 	IsPointer bool
+}
+
+func newInterfaceField(name string, target *ast.GenDecl) *InterfaceField {
+	return &InterfaceField{
+		Name:       name,
+		Target:     target,
+		ImportList: make(map[string]*ast.ImportSpec),
+	}
 }
 
 func NewVarField(pkg, name string, isPointer bool) *VarField {
@@ -81,6 +91,7 @@ func NewInterfaceExtractor() *InterfaceExtractor {
 }
 
 func (i *InterfaceExtractor) Parse(filename string) error {
+	i.importSpec = make(map[string]*ast.ImportSpec)
 	fset := token.NewFileSet()
 	node, err := parser.ParseFile(fset, filename, nil, parser.ParseComments)
 	if err != nil {
@@ -88,7 +99,7 @@ func (i *InterfaceExtractor) Parse(filename string) error {
 	}
 
 	i.extractPackage(node)
-
+	i.extractImports(node)
 	for _, f := range node.Decls {
 		var field *InterfaceField
 		genD, ok := f.(*ast.GenDecl)
@@ -104,7 +115,7 @@ func (i *InterfaceExtractor) Parse(filename string) error {
 			if !ok {
 				continue
 			}
-			field = &InterfaceField{Name: currType.Name.Name, Target: genD}
+			field = newInterfaceField(currType.Name.Name, genD)
 		}
 		if field != nil {
 			err := i.extractInterface(field)
@@ -125,6 +136,17 @@ func (i *InterfaceExtractor) extractPackage(node ast.Node) {
 	}
 }
 
+func (i *InterfaceExtractor) extractImports(node ast.Node) {
+	x, ok := node.(*ast.File)
+	if ok {
+		for _, v := range x.Imports {
+			if v.Name != nil {
+				i.importSpec[v.Name.String()] = v
+			}
+		}
+	}
+}
+
 func (i *InterfaceExtractor) extractInterface(field *InterfaceField) error {
 	for _, spec := range field.Target.Specs {
 		ts, ok := spec.(*ast.TypeSpec)
@@ -136,17 +158,19 @@ func (i *InterfaceExtractor) extractInterface(field *InterfaceField) error {
 			return errors.New("unable get interface type")
 		}
 
-		methodList, err := i.parseInterfaceMethods(tp)
+		methodList, importList, err := i.parseInterfaceMethods(tp)
 		if err != nil {
 			return err
 		}
+		field.ImportList = mergeMapImportSpec(field.ImportList, importList)
 		field.MethodList = append(field.MethodList, methodList...)
 	}
 	return nil
 }
 
-func (i *InterfaceExtractor) parseInterfaceMethods(s *ast.InterfaceType) ([]*InterfaceMethod, error) {
+func (i *InterfaceExtractor) parseInterfaceMethods(s *ast.InterfaceType) ([]*InterfaceMethod, map[string]*ast.ImportSpec, error) {
 	var methodList []*InterfaceMethod
+	importList := make(map[string]*ast.ImportSpec)
 	for _, f := range s.Methods.List {
 		method := &InterfaceMethod{
 			Name: f.Names[0].Name,
@@ -159,23 +183,26 @@ func (i *InterfaceExtractor) parseInterfaceMethods(s *ast.InterfaceType) ([]*Int
 			log.Fatalln("unable cast func to ast.FuncType")
 		}
 
-		args, err := i.extractParams(fn.Params.List)
+		args, paramImport, err := i.extractParams(fn.Params.List)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		importList = mergeMapImportSpec(importList, paramImport)
 		method.Args = args
-		result, err := i.extractParams(fn.Results.List)
+		result, paramImport, err := i.extractParams(fn.Results.List)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
+		importList = mergeMapImportSpec(importList, paramImport)
 		method.Result = result
 		methodList = append(methodList, method)
 	}
-	return methodList, nil
+	return methodList, importList, nil
 }
 
-func (i *InterfaceExtractor) extractParams(fn []*ast.Field) ([]*VarField, error) {
+func (i *InterfaceExtractor) extractParams(fn []*ast.Field) ([]*VarField, map[string]*ast.ImportSpec, error) {
 	var result []*VarField
+	importList := make(map[string]*ast.ImportSpec)
 	for _, param := range fn {
 		var arg *VarField
 		switch sel := param.Type.(type) {
@@ -186,21 +213,39 @@ func (i *InterfaceExtractor) extractParams(fn []*ast.Field) ([]*VarField, error)
 			}
 			arg = NewVarField(pkg, sel.Sel.Name, false)
 		case *ast.StarExpr:
-			ident, ok := sel.X.(*ast.Ident)
-			if !ok {
-				log.Fatalln("unable cast to ast.Ident package argument")
+			switch ptr := sel.X.(type) {
+			case *ast.Ident:
+				arg = NewVarField(i.PackageName, ptr.Name, true)
+			case *ast.SelectorExpr:
+				ident, ok := ptr.X.(*ast.Ident)
+				if !ok {
+					log.Fatalln("unable cast to ast.Ident package argument from *ast.SelectorExpr")
+				}
+				spec, ok := i.importSpec[ident.Name]
+				if ok {
+					importList[ident.Name] = spec
+				}
+				arg = NewVarField(ident.Name, ptr.Sel.Name, true)
+			default:
+				log.Fatalln("unable cast param to ast")
 			}
-			arg = NewVarField(i.PackageName, ident.Name, true)
 		case *ast.Ident:
 			arg = NewVarField("", sel.Name, false)
 		case *ast.Ellipsis:
 			// multiple args, unsupported now
 		default:
-			return nil, fmt.Errorf("unable cast arg to unexpected type")
+			return nil, nil, fmt.Errorf("unable cast arg to unexpected type")
 		}
 		if arg != nil {
 			result = append(result, arg)
 		}
 	}
-	return result, nil
+	return result, importList, nil
+}
+
+func mergeMapImportSpec(m1, m2 map[string]*ast.ImportSpec) map[string]*ast.ImportSpec {
+	for k, v := range m2 {
+		m1[k] = v
+	}
+	return m1
 }
