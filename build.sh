@@ -1,10 +1,24 @@
-#!/bin/bash
-#----!/usr/bin/env bash
-ROOT=$(PWD)
+#!/usr/bin/env bash
 
+ROOT=$(PWD)
 TEMPLATE_ROOT="${ROOT}/template"
 BUILDER_ROOT="${ROOT}/builder"
 MOCK_ROOT="${ROOT}/mock"
+
+HashFunc="shasum"
+hashCheck=`which ${HashFunc}`
+if [ -z ${hashCheck} ]; then
+  HashFunc="sha1sum"
+fi
+
+show-env()
+{
+  echo "ROOT: ${ROOT}"
+  echo "TEMPLATE_ROOT: ${TEMPLATE_ROOT}"
+  echo "BUILDER_ROOT: ${BUILDER_ROOT}"
+  echo "MOCK_ROOT: ${MOCK_ROOT}"
+  echo "HashFunc: ${HashFunc}"
+}
 
 template-init()
 {
@@ -27,8 +41,9 @@ add-module()
   #import module
   PKG=$1
   echo "ADD ${PKG}"
+
   PKG_NAME=`echo $PKG | cut -d\@ -f1`
-  FILENAME=`echo $PKG_NAME | shasum | cut -d" " -f1`
+  FILENAME=`echo $PKG_NAME | ${HashFunc} | cut -d" " -f1`
   FAKE_USE_FILE="${MOCK_ROOT}/internal/generated/${FILENAME}.go"
   echo "package generated" > $FAKE_USE_FILE
   echo "import \"${PKG_NAME}\"" >> $FAKE_USE_FILE
@@ -60,6 +75,9 @@ case $MODE in
   ;;
   add)
     add-module $2
+  ;;
+  env)
+    show-env
   ;;
   run)
     run-server
