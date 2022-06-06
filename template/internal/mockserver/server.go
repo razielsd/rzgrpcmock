@@ -44,6 +44,7 @@ func (s *Server) Run(ctx context.Context) {
 
 func (s *Server) addRoute(r *mux.Router) {
 	r.HandleFunc("/api/mock/add", s.handlerMockAdd).Methods("POST")
+	r.HandleFunc("/api/mock/reset", s.handlerMockReset).Methods("POST")
 	r.HandleFunc("/api/form", s.handlerForm).Methods("GET")
 	r.HandleFunc("/health/liveness", s.handlerHealthProbe).Methods("GET")
 	r.HandleFunc("/health/readiness", s.handlerHealthProbe).Methods("GET")

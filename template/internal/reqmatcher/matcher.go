@@ -38,6 +38,8 @@ type Matcher struct {
 }
 
 var matcherList map[string]*Matcher
+var ErrRuleNotFound = status.Error(codes.FailedPrecondition, "rule not found")
+var ErrFailedUnmarshal = status.Error(codes.Internal, "failed unmarshal response")
 
 func init() {
 	matcherList = make(map[string]*Matcher)
@@ -83,12 +85,17 @@ func (m *Matcher) Match(ctx context.Context, req, resp interface{}) error {
 			eqRule = rule
 		}
 	}
-	if eqRule != nil {
-		err := json.Unmarshal([]byte(eqRule.Response), &resp)
-		if err != nil {
-			return status.Error(codes.Internal, "failed unmarshal response")
-		}
+	if eqRule == nil {
+		return ErrRuleNotFound
 	}
+	err := json.Unmarshal([]byte(eqRule.Response), &resp)
+	if err != nil {
+		return ErrFailedUnmarshal
+	}
+	m.log.Info(
+		"Match success",
+		zap.String("method", meta.Method),
+	)
 	return nil
 }
 
@@ -100,6 +107,13 @@ func (m *Matcher) Append(rule *MatchRule) {
 	defer m.mu.Unlock()
 	rule.MethodName = strings.ToLower(strings.TrimSpace(rule.MethodName))
 	m.ruleList = append(m.ruleList, rule)
+}
+
+func (m *Matcher) Reset() {
+	m.log.Info("clear all rules")
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.ruleList = make([]*MatchRule, 0)
 }
 
 func (m *Matcher) isEqual(rule *MatchRule, meta RequestMeta, req interface{}) (int, bool) {
@@ -122,7 +136,7 @@ func (m *Matcher) isEqual(rule *MatchRule, meta RequestMeta, req interface{}) (i
 	if err != nil {
 		return 0, false
 	}
-	weight := 0
+	weight := 1
 	for k, v := range expected {
 		actual, ok := in[k]
 		if !ok {

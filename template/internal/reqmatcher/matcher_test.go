@@ -101,7 +101,7 @@ func TestMatcher_isEqual(t *testing.T) {
 		}
 		weight, f := matcher.isEqual(rule, meta, req)
 		require.True(t, f)
-		require.Equal(t, 2, weight)
+		require.Equal(t, 3, weight)
 	})
 }
 
