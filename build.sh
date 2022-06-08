@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+##!/bin/bash -x
 
 ROOT=$(PWD)
 TEMPLATE_ROOT="${ROOT}/template"
@@ -34,13 +35,29 @@ clean-mock()
 
 add-module()
 {
+  PKG=$1
+  load-module $PKG
+  import-module $PKG
+}
+
+add-exists-module()
+{
+  PKG=$1
+  import-module $PKG
+}
+
+load-module()
+{
   #import module
   PKG=$1
   echo "ADD ${PKG}"
-  PKG_NAME=`echo $PKG | cut -d\@ -f1`
   cd $MOCK_ROOT && go get "$PKG"
+}
 
-  #generate mock
+import-module()
+{
+  PKG=$1
+  PKG_NAME=`echo $PKG | cut -d\@ -f1`
   PKG_PATH=`find-package $PKG`
   if [ ! -d "${PKG_PATH}" ]; then
     echo "Package not found: ${PKG_PATH}"
@@ -101,6 +118,9 @@ case $MODE in
   ;;
   add)
     add-module $2
+  ;;
+  add-exists)
+    add-exists-module $2
   ;;
   env)
     show-env
