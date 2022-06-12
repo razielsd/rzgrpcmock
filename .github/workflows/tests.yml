@@ -52,6 +52,7 @@ jobs:
           file: ./coverage.txt
           flags: unittests
           name: codecov-umbrella
+          verbose: true
 
   tests-race100:
     runs-on: ubuntu-latest
