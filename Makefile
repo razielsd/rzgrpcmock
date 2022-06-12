@@ -18,7 +18,7 @@ proto:
 
 .PHONY: build
 build:
-	go build -v -o $(BIN) 
+	go build -v -o $(BIN)
 
 .PHONY: lint
 lint:
@@ -31,3 +31,6 @@ test:
 .PHONY: test100
 test100:
 	go test -race -count 100 ./...
+
+test-coverage:
+	go test -race ./... `go list ./... | grep -v examples` -coverprofile=coverage.txt -covermode=atomic
