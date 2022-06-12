@@ -1,0 +1,71 @@
+name: RzGrpcMock tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+env:
+  GO111MODULE: "on"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.17
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Linters
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.42
+
+      - name: make lint
+        run: make lint
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.17
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: make build
+        run: make build
+
+      - name: make test
+        run: make test-int-coverage
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: 81423374-9fb2-4837-9704-49019e31eeed
+          file: ./coverage.txt
+          flags: unittests
+          name: codecov-umbrella
+
+  tests-race100:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.17
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: make build
+        run: make build
+
+      - name: make test100
+        run: make test

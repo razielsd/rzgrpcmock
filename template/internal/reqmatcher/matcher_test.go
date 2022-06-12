@@ -2,6 +2,7 @@ package reqmatcher
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"testing"
 
 	"github.com/razielsd/rzgrpcmock/template/internal/logger"
@@ -12,7 +13,7 @@ func TestGetMatcher(t *testing.T) {
 }
 
 func TestMatcher_Append(t *testing.T) {
-	matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
+	matcher := NewMatcher(uuid.New().String(), logger.TestLogger(t))
 	rule := &MatchRule{
 		MethodName: "m1",
 		Request: `{
@@ -28,7 +29,7 @@ func TestMatcher_Append(t *testing.T) {
 
 func TestMatcher_Match(t *testing.T) {
 	t.Run("success match rule with 2 matched rule", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
+		matcher := NewMatcher(uuid.New().String(), logger.TestLogger(t))
 		methodName := "m2"
 		rule := &MatchRule{
 			MethodName: methodName,
@@ -69,7 +70,7 @@ func TestMatcher_Match(t *testing.T) {
 
 func TestMatcher_isEqual(t *testing.T) {
 	t.Run("method name is invalid", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
+		matcher := NewMatcher(uuid.New().String(), logger.TestLogger(t))
 		methodName := "m2"
 		rule := &MatchRule{
 			MethodName: "m1",
@@ -82,7 +83,7 @@ func TestMatcher_isEqual(t *testing.T) {
 	})
 
 	t.Run("success weight count", func(t *testing.T) {
-		matcher := NewMatcher(DefaultMatcher, logger.TestLogger(t))
+		matcher := NewMatcher(uuid.New().String(), logger.TestLogger(t))
 		methodName := "m1"
 		rule := &MatchRule{
 			MethodName: "m1",

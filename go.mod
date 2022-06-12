@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/felixge/httpsnoop v1.0.3
+	github.com/google/uuid v1.1.2
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/prometheus/client_golang v1.12.2
