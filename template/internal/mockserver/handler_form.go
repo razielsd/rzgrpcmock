@@ -57,5 +57,5 @@ func (s *Server) handlerForm(w http.ResponseWriter, r *http.Request) {
 	}
 	form = strings.Replace(form, "{{.Host}}", addr, 1)
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(form))
+	_, _ = w.Write([]byte(form))
 }

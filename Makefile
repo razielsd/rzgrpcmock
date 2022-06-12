@@ -17,25 +17,9 @@ proto:
 
 .PHONY: lint
 lint:
-	cd template && golangci-lint run ./...
-	cd builder && golangci-lint run ./...
+	golangci-lint run ./...
+
 
 .PHONY: test
 test:
-	cd ./template && go test ./...
-
-.PHONY: init
-init:
-	./build.sh init
-
-.PHONY: clean
-clean:
-	./build.sh clean
-
-.PHONY: env
-env:
-	./build.sh env
-
-.PHONY: run
-run:
-	./build.sh run
+	go test ./...

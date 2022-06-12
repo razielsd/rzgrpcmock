@@ -19,7 +19,7 @@ func init() {
 
 func genServiceExecute(cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
-		cmd.Usage()
+		_ = cmd.Usage()
 		return
 	}
 	builder := generator.NewBuilder()

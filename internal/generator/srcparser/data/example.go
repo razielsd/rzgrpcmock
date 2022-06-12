@@ -8,5 +8,5 @@ import (
 
 func FakeUseImport() {
 	a := ast.ImportSpec{}
-	fmt.Sprintf(alias.ToLower("asd"), a.Path)
+	fmt.Sprintf(alias.ToLower("asd"), a.Path) //nolint
 }

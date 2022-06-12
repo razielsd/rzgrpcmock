@@ -21,7 +21,7 @@ func (i *ImportSpec) GetName() string {
 }
 
 func (i *ImportSpec) extractImportName(path string) string {
-	path = strings.Trim(path, `""`)
+	path = strings.Trim(path, `"`)
 	parts := strings.Split(path, `/`)
 	return parts[len(parts) - 1]
 }
