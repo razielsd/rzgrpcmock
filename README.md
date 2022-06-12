@@ -1,5 +1,9 @@
 # RzGrpcMock
 
+[![codecov](https://codecov.io/gh/razielsd/rzgrpcmock/branch/master/graph/badge.svg)](https://codecov.io/gh/razielsd/rzgrpcmock)
+[![Go Report Card](https://goreportcard.com/badge/github.com/razielsd/rzgrpcmock)](https://goreportcard.com/report/github.com/razielsd/rzgrpcmock)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/razielsd/rzgrpcmock)
+
 ## Using
 ```
 RzGrpcMock service cli
