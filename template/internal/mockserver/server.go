@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
+	"github.com/razielsd/rzgrpcmock/template/internal/reqmatcher"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/config"
+	"github.com/razielsd/rzgrpcmock/template/internal/config"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

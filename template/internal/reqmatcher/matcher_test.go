@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/logger"
+	"github.com/razielsd/rzgrpcmock/template/internal/logger"
 	"github.com/stretchr/testify/require"
 )
 

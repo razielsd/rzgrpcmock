@@ -5,14 +5,14 @@ import (
 	"net"
 	"time"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/interceptor"
+	"github.com/razielsd/rzgrpcmock/template/internal/interceptor"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/mockserver"
+	"github.com/razielsd/rzgrpcmock/template/internal/mockserver"
 
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/razielsd/rzgrpcmock/server/internal/config"
-	"github.com/razielsd/rzgrpcmock/server/internal/generated"
-	"github.com/razielsd/rzgrpcmock/server/internal/logger"
+	"github.com/razielsd/rzgrpcmock/template/internal/config"
+	"github.com/razielsd/rzgrpcmock/template/internal/generated"
+	"github.com/razielsd/rzgrpcmock/template/internal/logger"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/keepalive"

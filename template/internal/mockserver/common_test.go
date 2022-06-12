@@ -6,8 +6,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/config"
-	"github.com/razielsd/rzgrpcmock/server/internal/logger"
+	"github.com/razielsd/rzgrpcmock/template/internal/config"
+	"github.com/razielsd/rzgrpcmock/template/internal/logger"
 )
 
 func createServer(t *testing.T) *Server {

@@ -2,7 +2,7 @@ package interceptor
 
 import (
 	"context"
-	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
+	"github.com/razielsd/rzgrpcmock/template/internal/reqmatcher"
 	"strings"
 
 	"google.golang.org/grpc"

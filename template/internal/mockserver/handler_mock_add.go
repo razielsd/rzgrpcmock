@@ -3,7 +3,7 @@ package mockserver
 import (
 	"net/http"
 
-	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
+	"github.com/razielsd/rzgrpcmock/template/internal/reqmatcher"
 )
 
 func (s *Server) handlerMockAdd(w http.ResponseWriter, r *http.Request) {

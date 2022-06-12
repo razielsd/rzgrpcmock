@@ -1,11 +1,21 @@
 # RzGrpcMock
 
 ## Using
-Для настройки мок-сервера используйте `build.sh`, параметры:
- * `./build.sh init` - инициализации мок-сервера
- * `./build.sh clean` - привести мок-сервер к начальному состоянию
- * `./build.sh add <go module>` - как в `go get ...`
- * `./build.sh run` - запуск сервера
+```
+RzGrpcMock service cli
+
+Usage:
+  rzgrpcmock [command]
+
+Available Commands:
+  clean       clean default grpc mock service
+  gen         generate mock api
+  help        Help about any command
+  init        init default grpc mock service
+
+Flags:
+  -h, --help   help for rzgrpcmock
+```
 
 ## Configure
 

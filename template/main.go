@@ -6,8 +6,8 @@ import (
 	"os/signal"
 
 	"github.com/caarlos0/env"
-	"github.com/razielsd/rzgrpcmock/server/internal/app"
-	"github.com/razielsd/rzgrpcmock/server/internal/config"
+	"github.com/razielsd/rzgrpcmock/template/internal/app"
+	"github.com/razielsd/rzgrpcmock/template/internal/config"
 	"go.uber.org/zap"
 )
 
