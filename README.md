@@ -7,18 +7,22 @@
 ## Using
 ```
 RzGrpcMock service cli
-
-Usage:
-  rzgrpcmock [command]
-
 Available Commands:
+  init        init default grpc mock service
   clean       clean default grpc mock service
   gen         generate mock api
-  help        Help about any command
-  init        init default grpc mock service
-
-Flags:
-  -h, --help   help for rzgrpcmock
+```
+Создаем мок-сервис
+```
+rzgrpcmock init <path/to/new/service>
+```
+Добавляем в него апи для сервиса моков, можно добавить несколько пакетов, эту команду можно выполнять несколько раз:
+```
+rzgrpcmock gen <path/to/new/service> <package@version>
+```
+Запускаем сервис:
+```
+cd <path/to/new/service> && go run .
 ```
 
 ## Configure
