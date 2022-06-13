@@ -45,8 +45,6 @@ func init() {
 		service{{ .Index }} := svc{{ .Index }}.NewService(logger)
 		sa{{ .Index }}.Register{{ .InterfaceName }}(s, service{{ .Index }})
 	}
-	mu.Lock()
-	defer mu.Unlock()
 	handlerRegistration = append(handlerRegistration, f)
 }
 
