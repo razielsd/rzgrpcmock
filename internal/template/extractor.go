@@ -6,7 +6,6 @@ import (
 	"github.com/razielsd/rzgrpcmock/internal/cli"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -110,9 +109,7 @@ func (t *ExtractorService) goModInit() error {
 		return nil
 	}
 	t.printer.Action("Run go mod init")
-	cmd := exec.Command("go", "mod", "init", "github.com/razielsd/rzgrpcmock/template")
-	cmd.Dir = t.path
-	if err := cmd.Run(); err != nil {
+	if err := cli.ExecCmd(t.path, "go", "mod", "init", "github.com/razielsd/rzgrpcmock/template"); err != nil {
 		t.printer.Push(cli.StateFail)
 		log.Fatal(err)
 	}
@@ -123,10 +120,7 @@ func (t *ExtractorService) goModInit() error {
 
 func (t *ExtractorService) goModTidy() error {
 	t.printer.Action("Run go mod tidy")
-
-	cmd := exec.Command("go", "mod", "tidy")
-	cmd.Dir = t.path
-	if err := cmd.Run(); err != nil {
+	if err := cli.ExecCmd(t.path,"go", "mod", "tidy"); err != nil {
 		t.printer.Push(cli.StateFail)
 		log.Fatal(err)
 	}

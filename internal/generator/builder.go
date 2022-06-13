@@ -5,6 +5,7 @@ import (
 	"github.com/razielsd/rzgrpcmock/internal/cli"
 	"github.com/razielsd/rzgrpcmock/internal/generator/srcbuilder"
 	"github.com/razielsd/rzgrpcmock/internal/generator/srcparser"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -42,6 +43,9 @@ func (b *Builder) Run(projectDir, packageName string) error {
 		return err
 	}
 	if err := b.generateMockServer(); err != nil {
+		return err
+	}
+	if err := b.goModTidy(); err != nil {
 		return err
 	}
 	return nil
@@ -131,5 +135,15 @@ func (b *Builder) build(filename, saveDir string) error {
 			fmt.Printf("ERR: %s", err.Error())
 		}
 	}
+	return nil
+}
+
+func (b *Builder) goModTidy() error {
+	b.printer.Action("Run go mod tidy")
+	if err := cli.ExecCmd(b.projectDir,"go", "mod", "tidy"); err != nil {
+		b.printer.Push(cli.StateFail)
+		log.Fatal(err)
+	}
+	b.printer.Push(cli.StateOk)
 	return nil
 }

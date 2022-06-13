@@ -6,7 +6,7 @@ import (
 	"context"
 	{{.PackageName}} "{{.ModuleName}}"
 	"go.uber.org/zap"
-	"github.com/razielsd/rzgrpcmock/server/internal/reqmatcher"
+	"github.com/razielsd/rzgrpcmock/template/internal/reqmatcher"
 	{{.ExtImport}}
 )
 
@@ -36,7 +36,7 @@ const registerHandlerTemplate = `package generated
 import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	svc{{ .Index }} "github.com/razielsd/rzgrpcmock/server/internal/generated/service_{{ .Index }}"
+	svc{{ .Index }} "github.com/razielsd/rzgrpcmock/template/internal/generated/service_{{ .Index }}"
 	sa{{ .Index }} "{{ .ExportModuleName }}"
 )
 
