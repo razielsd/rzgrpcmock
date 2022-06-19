@@ -1,16 +1,17 @@
 package srcparser
 
 import (
-	"github.com/stretchr/testify/require"
 	"go/ast"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestImportSpec_GetName(t *testing.T) {
 	t.Run("simple import name", func(t *testing.T) {
 		astSpec := &ast.ImportSpec{
-			Path:    &ast.BasicLit{
-				Value:    "\"fmt\"",
+			Path: &ast.BasicLit{
+				Value: "\"fmt\"",
 			},
 		}
 		spec := newImportSpec(astSpec)
@@ -19,8 +20,8 @@ func TestImportSpec_GetName(t *testing.T) {
 
 	t.Run("composite import name", func(t *testing.T) {
 		astSpec := &ast.ImportSpec{
-			Path:    &ast.BasicLit{
-				Value:    "\"go/ast\"",
+			Path: &ast.BasicLit{
+				Value: "\"go/ast\"",
 			},
 		}
 		spec := newImportSpec(astSpec)
@@ -30,10 +31,10 @@ func TestImportSpec_GetName(t *testing.T) {
 	t.Run("alias import name", func(t *testing.T) {
 		astSpec := &ast.ImportSpec{
 			Name: &ast.Ident{
-				Name:    "alias",
+				Name: "alias",
 			},
-			Path:    &ast.BasicLit{
-				Value:    "\"fmt\"",
+			Path: &ast.BasicLit{
+				Value: "\"fmt\"",
 			},
 		}
 		spec := newImportSpec(astSpec)
@@ -46,4 +47,3 @@ func Test_newImportSpec(t *testing.T) {
 	spec := newImportSpec(astSpec)
 	require.NotNil(t, spec)
 }
-

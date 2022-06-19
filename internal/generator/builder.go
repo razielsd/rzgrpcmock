@@ -2,27 +2,28 @@ package generator
 
 import (
 	"fmt"
-	"github.com/razielsd/rzgrpcmock/internal/cli"
-	"github.com/razielsd/rzgrpcmock/internal/generator/srcbuilder"
-	"github.com/razielsd/rzgrpcmock/internal/generator/srcparser"
 	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/razielsd/rzgrpcmock/internal/cli"
+	"github.com/razielsd/rzgrpcmock/internal/generator/srcbuilder"
+	"github.com/razielsd/rzgrpcmock/internal/generator/srcparser"
 )
 
 const (
-	moduleName = "github.com/razielsd/rzgrpcmock/server"
+	moduleName            = "github.com/razielsd/rzgrpcmock/server"
 	generatedPathLocation = "/internal/generated"
 )
 
 type Builder struct {
-	printer *cli.InfoPrinter
-	packageName string
+	printer        *cli.InfoPrinter
+	packageName    string
 	packageVersion string
-	packagePath string
-	fileList []string
-	projectDir string
+	packagePath    string
+	fileList       []string
+	projectDir     string
 }
 
 func NewBuilder() *Builder {
@@ -112,18 +113,17 @@ func (b *Builder) generateMockServer() error {
 }
 
 func (b *Builder) build(filename, saveDir string) error {
-	extractor := srcparser.NewInterfaceExtractor()
-	err := extractor.Parse(filename)
-	if err != nil {
-		fmt.Printf("ERR: %s\n", err)
+	parser := srcparser.NewFileParser(filename)
+	if err := parser.Parse(); err != nil {
+		return err
 	}
 	generator := &srcbuilder.Builder{
 		ModuleName:       moduleName,
 		ExportModuleName: b.packageName,
-		PackageName:      extractor.PackageName,
+		PackageName:      parser.PackageName,
 		SaveDir:          saveDir,
 	}
-	for _, field := range extractor.InterfaceList {
+	for _, field := range parser.GetInterfaceList() {
 		if !strings.HasSuffix(field.Name, "Server") {
 			continue
 		}
@@ -140,7 +140,7 @@ func (b *Builder) build(filename, saveDir string) error {
 
 func (b *Builder) goModTidy() error {
 	b.printer.Action("Run go mod tidy")
-	if err := cli.ExecCmd(b.projectDir,"go", "mod", "tidy"); err != nil {
+	if err := cli.ExecCmd(b.projectDir, "go", "mod", "tidy"); err != nil {
 		b.printer.Push(cli.StateFail)
 		log.Fatal(err)
 	}

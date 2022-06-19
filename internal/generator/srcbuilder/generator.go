@@ -53,7 +53,7 @@ func (b *Builder) buildRegisterHandler(item serviceItem) error {
 	return nil
 }
 
-func (b *Builder) BuildService(field *srcparser.InterfaceField) error {
+func (b *Builder) BuildService(field *srcparser.InterfaceSpec) error {
 	b.Key = makeHash(b.ExportModuleName + "/" + field.Name)
 	src := b.buildServiceHandler(field)
 	path := fmt.Sprintf("%s/service_%s", b.SaveDir, b.Key)
@@ -75,16 +75,16 @@ func (b *Builder) BuildService(field *srcparser.InterfaceField) error {
 	return b.buildRegisterHandler(service)
 }
 
-func (b *Builder) buildServiceHandler(field *srcparser.InterfaceField) string {
+func (b *Builder) buildServiceHandler(field *srcparser.InterfaceSpec) string {
 	handlerSrc, _ := b.buildServiceHeader(field)
-	for _, v := range field.MethodList {
+	for _, v := range field.FuncList {
 		src, _ := b.buildHandler(v)
 		handlerSrc += src
 	}
 	return handlerSrc
 }
 
-func (b *Builder) buildServiceHeader(field *srcparser.InterfaceField) (string, error) {
+func (b *Builder) buildServiceHeader(field *srcparser.InterfaceSpec) (string, error) {
 	t := template.New("")
 	tmpl, err := t.Parse(serviceTemplate)
 	if err != nil {
@@ -92,7 +92,7 @@ func (b *Builder) buildServiceHeader(field *srcparser.InterfaceField) (string, e
 	}
 	extImport := ""
 	for k, importSpec := range field.ImportList {
-		extImport += fmt.Sprintf("%s %s\n", k, importSpec.Path.Value)
+		extImport += fmt.Sprintf("%s %s\n", k, importSpec.GetPath())
 	}
 	params := map[string]interface{}{
 		"PackageName":   b.PackageName,
@@ -110,20 +110,20 @@ func (b *Builder) buildServiceHeader(field *srcparser.InterfaceField) (string, e
 	return src.String(), nil
 }
 
-func (b *Builder) buildHandler(method *srcparser.InterfaceMethod) (string, error) {
+func (b *Builder) buildHandler(method *srcparser.FuncSpec) (string, error) {
 	t := template.New("")
 	tmpl, err := t.Parse(handlerTemplate)
 	if err != nil {
 		return "", err
 	}
 	var argList []string
-	for i, v := range method.Args {
-		arg := fmt.Sprintf("arg%d %s", i, v.String())
+	for i, v := range method.ArgList {
+		arg := fmt.Sprintf("arg%d %s", i, v.Header())
 		argList = append(argList, arg)
 	}
 	params := map[string]string{
 		"Method":   method.Name,
-		"Response": method.Result[0].FullName(),
+		"Response": method.ResultList[0].FullName(),
 		"Args":     strings.Join(argList, ", "),
 	}
 

@@ -20,8 +20,12 @@ func (i *ImportSpec) GetName() string {
 	return i.extractImportName(i.spec.Path.Value)
 }
 
+func (i *ImportSpec) GetPath() string {
+	return i.spec.Path.Value
+}
+
 func (i *ImportSpec) extractImportName(path string) string {
 	path = strings.Trim(path, `"`)
 	parts := strings.Split(path, `/`)
-	return parts[len(parts) - 1]
+	return parts[len(parts)-1]
 }

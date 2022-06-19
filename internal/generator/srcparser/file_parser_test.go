@@ -1,14 +1,14 @@
 package srcparser
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 const testFile = "./data/example.go"
 
 func TestFileParser_Parse(t *testing.T) {
-
 }
 
 func TestFileParser_extractImports(t *testing.T) {

@@ -1,13 +1,14 @@
 package srcparser
 
 import (
-	"github.com/stretchr/testify/require"
-	ast2 "go/ast"
+	"go/ast"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_newInterfaceSpec(t *testing.T) {
-	ast := &ast2.GenDecl{}
-	spec := newInterfaceSpec("test", ast)
+	node := &ast.GenDecl{}
+	spec := newInterfaceSpec("pkgname", "test", node)
 	require.NotNil(t, spec)
 }

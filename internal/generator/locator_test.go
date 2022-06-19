@@ -1,11 +1,12 @@
 package generator
 
 import (
-	"github.com/stretchr/testify/require"
 	"go/build"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_newPackageLocator(t *testing.T) {
