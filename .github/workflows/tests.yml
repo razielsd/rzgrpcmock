@@ -23,7 +23,7 @@ jobs:
       - name: Linters
         uses: golangci/golangci-lint-action@v2
         with:
-          version: v1.42
+          version: v1.46
 
       - name: make lint
         run: make lint
