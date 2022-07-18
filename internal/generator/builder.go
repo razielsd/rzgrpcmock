@@ -37,6 +37,9 @@ func (b *Builder) Run(projectDir, packageName string) error {
 	if err := b.extractPackageName(packageName); err != nil {
 		return err
 	}
+	if err := b.getPackage(packageName); err != nil {
+		return err
+	}
 	if err := b.searchPackage(); err != nil {
 		return err
 	}
@@ -62,6 +65,16 @@ func (b *Builder) extractPackageName(packageName string) error {
 	b.printer.Push(cli.StateOk)
 	b.packageName = parts[0]
 	b.packageVersion = parts[1]
+	return nil
+}
+
+func (b *Builder) getPackage(pkgName string) error {
+	b.printer.Action("Run go get package")
+	if err := cli.ExecCmd(b.projectDir, "go", "get", pkgName); err != nil {
+		b.printer.Push(cli.StateFail)
+		log.Fatal(err)
+	}
+	b.printer.Push(cli.StateOk)
 	return nil
 }
 
