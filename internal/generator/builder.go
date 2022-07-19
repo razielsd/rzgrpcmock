@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -24,6 +25,7 @@ type Builder struct {
 	packagePath    string
 	fileList       []string
 	projectDir     string
+	fakeUsageFile  string
 }
 
 func NewBuilder() *Builder {
@@ -40,6 +42,12 @@ func (b *Builder) Run(projectDir, packageName string) error {
 	if err := b.getPackage(packageName); err != nil {
 		return err
 	}
+	if err := b.makeFakeUsage(); err != nil {
+		return err
+	}
+	if err := b.goModVendor(); err != nil {
+		return err
+	}
 	if err := b.searchPackage(); err != nil {
 		return err
 	}
@@ -49,7 +57,10 @@ func (b *Builder) Run(projectDir, packageName string) error {
 	if err := b.generateMockServer(); err != nil {
 		return err
 	}
-	if err := b.goModTidy(); err != nil {
+	if err := b.clean(); err != nil {
+		return err
+	}
+	if err := b.goModVendor(); err != nil {
 		return err
 	}
 	return nil
@@ -68,6 +79,30 @@ func (b *Builder) extractPackageName(packageName string) error {
 	return nil
 }
 
+func (b *Builder) makeFakeUsage() error {
+	b.printer.Action("Make fake usage")
+	template := "package generated\nimport \"%s\""
+	code := fmt.Sprintf(template, b.packageName)
+	b.fakeUsageFile = b.projectDir + string(os.PathSeparator) + generatedPathLocation  +
+		string(os.PathSeparator) + "fake_" + srcbuilder.MakeHash(b.packageName) + ".go"
+	if err := ioutil.WriteFile(b.fakeUsageFile, []byte(code), 0644); err != nil {
+		b.printer.Push(cli.StateFail)
+		return err
+	}
+	b.printer.Push(cli.StateOk)
+	return nil
+}
+
+func (b *Builder) clean() error {
+	b.printer.Action("Clean")
+	if err := os.Remove(b.fakeUsageFile); err != nil {
+		b.printer.Push(cli.StateFail)
+		return err
+	}
+	b.printer.Push(cli.StateOk)
+	return nil
+}
+
 func (b *Builder) getPackage(pkgName string) error {
 	b.printer.Action("Run go get package")
 	if err := cli.ExecCmd(b.projectDir, "go", "get", pkgName); err != nil {
@@ -80,8 +115,8 @@ func (b *Builder) getPackage(pkgName string) error {
 
 func (b *Builder) searchPackage() error {
 	b.printer.Action("Search package")
-	locator := newPackageLocator()
-	path, err := locator.Search(b.packageName, b.packageVersion)
+	locator := newPackageLocator(b.projectDir)
+	path, err := locator.Search(b.packageName)
 	if err != nil {
 		b.printer.Push(cli.StateFail)
 		return err
@@ -151,9 +186,9 @@ func (b *Builder) build(filename, saveDir string) error {
 	return nil
 }
 
-func (b *Builder) goModTidy() error {
-	b.printer.Action("Run go mod tidy")
-	if err := cli.ExecCmd(b.projectDir, "go", "mod", "tidy"); err != nil {
+func (b *Builder) goModVendor() error {
+	b.printer.Action("Run go mod vendor")
+	if err := cli.ExecCmd(b.projectDir, "go", "mod", "vendor"); err != nil {
 		b.printer.Push(cli.StateFail)
 		log.Fatal(err)
 	}

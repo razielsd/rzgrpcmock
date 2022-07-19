@@ -38,7 +38,7 @@ func (t *ExtractorService) Init(path string) error {
 		return err
 	}
 
-	if err := t.goModTidy(); err != nil {
+	if err := t.goModVendor(); err != nil {
 		return err
 	}
 
@@ -118,9 +118,9 @@ func (t *ExtractorService) goModInit() error {
 	return nil
 }
 
-func (t *ExtractorService) goModTidy() error {
-	t.printer.Action("Run go mod tidy")
-	if err := cli.ExecCmd(t.path,"go", "mod", "tidy"); err != nil {
+func (t *ExtractorService) goModVendor() error {
+	t.printer.Action("Run go mod vendor")
+	if err := cli.ExecCmd(t.path,"go", "mod", "vendor"); err != nil {
 		t.printer.Push(cli.StateFail)
 		log.Fatal(err)
 	}

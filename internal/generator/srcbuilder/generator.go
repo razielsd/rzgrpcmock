@@ -2,7 +2,6 @@ package srcbuilder
 
 import (
 	"bytes"
-	"crypto/md5" //nolint:gosec
 	"fmt"
 	"html/template"
 	"os"
@@ -54,7 +53,7 @@ func (b *Builder) buildRegisterHandler(item serviceItem) error {
 }
 
 func (b *Builder) BuildService(field *srcparser.InterfaceSpec) error {
-	b.Key = makeHash(b.ExportModuleName + "/" + field.Name)
+	b.Key = MakeHash(b.ExportModuleName + "/" + field.Name)
 	src := b.buildServiceHandler(field)
 	path := fmt.Sprintf("%s/service_%s", b.SaveDir, b.Key)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -148,9 +147,4 @@ func overwriteFile(filename, data string) error {
 		return err
 	}
 	return nil
-}
-
-func makeHash(s string) string {
-	data := []byte(s)
-	return fmt.Sprintf("%x", md5.Sum(data)) //nolint:gosec
 }

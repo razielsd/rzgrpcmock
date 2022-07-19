@@ -2,7 +2,6 @@ package generator
 
 import (
 	"errors"
-	"go/build"
 	"os"
 	"strings"
 )
@@ -15,35 +14,18 @@ type packageLocator struct {
 	sep      string
 }
 
-func newPackageLocator() *packageLocator {
+func newPackageLocator(projectDir string) *packageLocator {
 	sep := string(os.PathSeparator)
 	return &packageLocator{
 		sep:     sep,
-		modpath: strings.TrimSuffix(build.Default.GOPATH, string(os.PathSeparator)) + sep + "pkg" + sep + "mod",
+		modpath: strings.TrimSuffix(projectDir, string(os.PathSeparator)) + sep + "vendor",
 	}
 }
 
-func (p *packageLocator) Search(name, version string) (string, error) {
-	index := 0
-	for {
-		path := p.makePath(name, version, index)
-		index++
-		if path == "" {
-			break
-		}
-		if _, err := os.Stat(path); err == nil {
-			return path, nil
-		}
+func (p *packageLocator) Search(name string) (string, error) {
+	path := p.modpath + p.sep + name
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
 	}
 	return "", ErrPackageNotFound
-}
-
-func (p *packageLocator) makePath(name, version string, index int) string {
-	parts := strings.Split(name, p.sep)
-	if len(parts) <= index {
-		return ""
-	}
-	parts[len(parts)-index-1] += "@" + version
-
-	return p.modpath + p.sep + strings.Join(parts, p.sep)
 }
