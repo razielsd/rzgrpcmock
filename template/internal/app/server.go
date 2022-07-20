@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"log"
 	"net"
 	"time"
 
@@ -30,7 +31,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	// log
 	lg, err := logger.CreateLogger(cfg)
 	if err != nil {
-		zap.S().Fatalf("Unable init logger: %s", err)
+		log.Fatalln("unable init logger")
 	}
 	grpc_prometheus.EnableHandlingTimeHistogram()
 	// grpc server
@@ -45,7 +46,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 
 	l, err := net.Listen("tcp", cfg.GRPCAddr)
 	if err != nil {
-		zap.S().Fatalf("failed to listen tcp %s, %v\n", cfg.GRPCAddr, err)
+		lg.Fatal("failed to listen tcp", zap.Error(err), zap.String("port", cfg.GRPCAddr))
 	}
 
 	generated.RegisterHandler(s, lg)
@@ -53,7 +54,7 @@ func Run(ctx context.Context, cfg *config.Config) error {
 	go func() {
 		lg.Info("starting grpc server", zap.String("grpc host", cfg.GRPCAddr))
 		if err := s.Serve(l); err != nil {
-			zap.S().Fatalf("error service grpc server %v", err)
+			lg.Fatal("error service grpc server", zap.Error(err))
 		}
 	}()
 
