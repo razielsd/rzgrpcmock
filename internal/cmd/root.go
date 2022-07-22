@@ -13,6 +13,7 @@ var rootCmd = &cobra.Command{
 	Use:   "rzgrpcmock",
 	Short: "rzgrpcmock",
 	Long:  `RzGrpcMock service cli`,
+	Version: "0.0.1",
 }
 
 // Execute main run point.
