@@ -45,14 +45,14 @@ jobs:
       - name: make test
         run: make test-coverage
 
-#      - name: Upload coverage report
-#        uses: codecov/codecov-action@v2
-#        with:
-#          token: dde19df5-c03b-49a5-9e95-32113b3ecfb7
-#          file: ./coverage.txt
-#          flags: unittests
-#          name: codecov-umbrella
-#          verbose: true
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v2
+        with:
+          token: dde19df5-c03b-49a5-9e95-32113b3ecfb7
+          file: ./coverage.txt
+          flags: unittests
+          name: codecov-umbrella
+          verbose: true
 
   tests-race100:
     runs-on: ubuntu-latest

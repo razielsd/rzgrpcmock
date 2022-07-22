@@ -38,6 +38,10 @@ func (t *ExtractorService) Init(path string) error {
 		return err
 	}
 
+	if err := t.goModTidy(); err != nil {
+		return err
+	}
+
 	if err := t.goModVendor(); err != nil {
 		return err
 	}
@@ -104,7 +108,7 @@ func (t *ExtractorService) copyFiles() error {
 func (t *ExtractorService) goModInit() error {
 	gomodPath := t.path + string(os.PathSeparator) + "go.mod"
 	if _, err := os.Stat(gomodPath); err == nil {
-		t.printer.Action("go.mod allready exists")
+		t.printer.Action("go.mod already exists")
 		t.printer.Push(cli.StateOk)
 		return nil
 	}
@@ -118,6 +122,15 @@ func (t *ExtractorService) goModInit() error {
 	return nil
 }
 
+func (t *ExtractorService) goModTidy() error {
+	t.printer.Action("Run go mod tidy")
+	if err := cli.ExecCmd(t.path,"go", "mod", "tidy"); err != nil {
+		t.printer.Push(cli.StateFail)
+		log.Fatal(err)
+	}
+	t.printer.Push(cli.StateOk)
+	return nil
+}
 func (t *ExtractorService) goModVendor() error {
 	t.printer.Action("Run go mod vendor")
 	if err := cli.ExecCmd(t.path,"go", "mod", "vendor"); err != nil {
