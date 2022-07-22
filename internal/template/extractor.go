@@ -113,9 +113,12 @@ func (t *ExtractorService) goModInit() error {
 		return nil
 	}
 	t.printer.Action("Run go mod init")
-	if err := cli.ExecCmd(t.path, "go", "mod", "init", "github.com/razielsd/rzgrpcmock/template"); err != nil {
-		t.printer.Push(cli.StateFail)
-		log.Fatal(err)
+	if err := cli.ExecCmd(t.path, "go", "mod", "init", "github.com/razielsd/rzgrpcmock/template"); err != nil { //nolint: staticcheck
+		// skip error because can be return error: to add module requirements and sums: go mod tidy
+		// but it is not error
+		// t.printer.Push(cli.StateFail)
+		// log.Fatal(err)
+		// @todo: check error
 	}
 	t.printer.Push(cli.StateOk)
 
